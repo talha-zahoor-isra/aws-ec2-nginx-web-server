@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bench — AWS Static Website</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,300;0,500;0,600;1,500&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<style>
+:root {
+  --ink: #1B1D1F;
+  --paper: #F7F5F0;
+  --panel: #EDE9DE;
+  --pine: #3E6259;
+  --brass: #B8935A;
+  --line: rgba(27,29,31,0.14);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: 'IBM Plex Mono', monospace;
+  line-height: 1.5;
+}
+
+.wrap {
+  max-width: 1040px;
+  margin: 0 auto;
+  padding: 56px 24px 96px;
+}
+
+header {
+  margin-bottom: 48px;
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 32px;
+}
+
+h1 {
+  font-family: 'Fraunces', serif;
+  font-weight: 500;
+  font-size: clamp(2.2rem, 5vw, 3.4rem);
+  margin: 0 0 12px;
+}
+
+header p {
+  max-width: 56ch;
+  font-size: 0.95rem;
+  color: #4a4d4f;
+  margin: 0;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 20px;
+}
+
+.panel {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.panel.wide {
+  grid-column: span 2;
+}
+
+@media (max-width: 700px) {
+  .panel.wide {
+    grid-column: span 1;
+  }
+}
+
+.tag {
+  font-size: 0.72rem;
+  color: var(--pine);
+}
+
+.tag::before {
+  content: "●";
+  color: var(--brass);
+  margin-right: 8px;
+}
+
+.panel h2 {
+  font-family: 'Fraunces', serif;
+  font-weight: 500;
+  font-size: 1.3rem;
+  margin: 0;
+}
+
+.clock {
+  font-family: 'Fraunces', serif;
+  font-weight: 300;
+  font-size: clamp(2.4rem, 6vw, 3.6rem);
+}
+
+.date-line {
+  font-size: 0.85rem;
+  color: #4a4d4f;
+}
+
+.counter-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.counter-row button {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 1rem;
+  width: 40px;
+  height: 40px;
+  border: 1px solid var(--ink);
+  background: transparent;
+  cursor: pointer;
+}
+
+.counter-value {
+  font-family: 'Fraunces', serif;
+  font-size: 2rem;
+  min-width: 3ch;
+  text-align: center;
+}
+
+.gallery {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+.gallery div {
+  aspect-ratio: 1;
+  background: linear-gradient(135deg, var(--pine), var(--brass));
+}
+
+.gallery div:nth-child(2) {
+  background: linear-gradient(135deg, var(--brass), var(--ink));
+}
+
+.gallery div:nth-child(3) {
+  background: linear-gradient(135deg, var(--ink), var(--pine));
+}
+
+.gallery div:nth-child(4) {
+  background: linear-gradient(135deg, var(--paper), var(--pine));
+}
+
+.gallery div:nth-child(5) {
+  background: linear-gradient(135deg, var(--pine), var(--paper));
+}
+
+.gallery div:nth-child(6) {
+  background: linear-gradient(135deg, var(--brass), var(--pine));
+}
+
+.wave-box {
+  height: 80px;
+  position: relative;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  background: var(--paper);
+}
+
+.wave-box svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.switch-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.switch {
+  width: 52px;
+  height: 28px;
+  border: 1px solid var(--ink);
+  border-radius: 14px;
+  position: relative;
+  cursor: pointer;
+  background: transparent;
+}
+
+.switch .knob {
+  width: 20px;
+  height: 20px;
+  background: var(--ink);
+  border-radius: 50%;
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  transition: left 0.2s ease;
+}
+
+.switch.on {
+  background: var(--pine);
+  border-color: var(--pine);
+}
+
+.switch.on .knob {
+  left: 27px;
+  background: var(--paper);
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.field label {
+  font-size: 0.75rem;
+  color: #4a4d4f;
+}
+
+.field input,
+.field select {
+  font-family: 'IBM Plex Mono', monospace;
+  padding: 8px 10px;
+  border: 1px solid var(--ink);
+  background: var(--paper);
+  color: var(--ink);
+}
+
+.submit-btn {
+  align-self: flex-start;
+  font-family: 'IBM Plex Mono', monospace;
+  padding: 10px 18px;
+  border: 1px solid var(--ink);
+  background: var(--ink);
+  color: var(--paper);
+  cursor: pointer;
+}
+
+.submit-note {
+  font-size: 0.8rem;
+  color: var(--pine);
+  min-height: 1.2em;
+}
+
+footer {
+  margin-top: 56px;
+  font-size: 0.78rem;
+  color: #6b6e70;
+  border-top: 1px solid var(--line);
+  padding-top: 20px;
+}
+</style>
+
+</head>
+
+<body>
+
+<div class="wrap">
+
+<header>
+  <h1>Bench</h1>
+  <p>
+    A simple static website running on an AWS EC2 instance
+    using Nginx.
+  </p>
+</header>
+
+<div class="grid">
+
+<div class="panel">
+  <span class="tag">LIVE TIME</span>
+  <div class="clock" id="clock">--:--:--</div>
+  <div class="date-line" id="dateLine">—</div>
+</div>
+
+<div class="panel">
+  <span class="tag">STATE</span>
+  <h2>Counter</h2>
+
+  <div class="counter-row">
+    <button id="dec">−</button>
+    <div class="counter-value" id="countVal">0</div>
+    <button id="inc">+</button>
+  </div>
+</div>
+
+<div class="panel">
+  <span class="tag">TOGGLE</span>
+  <h2>Switch</h2>
+
+  <div class="switch-row">
+    <button class="switch" id="switchBtn">
+      <span class="knob"></span>
+    </button>
+
+```
+<span id="switchLabel">off</span>
+```
+
+  </div>
+</div>
+
+<div class="panel wide">
+  <span class="tag">COLOR TILES</span>
+  <h2>Gallery</h2>
+
+  <div class="gallery">
+    <div></div>
+    <div></div>
+    <div></div>
+    <div></div>
+    <div></div>
+    <div></div>
+  </div>
+</div>
+
+<div class="panel">
+  <span class="tag">MOTION</span>
+  <h2>Wave</h2>
+
+  <div class="wave-box">
+    <svg viewBox="0 0 300 80" preserveAspectRatio="none">
+      <path
+        id="wavePath"
+        d="M0,40 Q75,10 150,40 T300,40"
+        fill="none"
+        stroke="#3E6259"
+        stroke-width="3"
+      />
+    </svg>
+  </div>
+</div>
+
+<div class="panel wide">
+  <span class="tag">INPUT</span>
+  <h2>Say hello</h2>
+
+  <div class="field">
+    <label for="nameInput">Name</label>
+    <input id="nameInput" type="text" placeholder="Type your name">
+  </div>
+
+  <div class="field">
+    <label for="moodInput">Mood</label>
+
+```
+<select id="moodInput">
+  <option>curious</option>
+  <option>focused</option>
+  <option>playful</option>
+  <option>tired</option>
+</select>
+```
+
+  </div>
+
+  <button class="submit-btn" id="greetBtn">
+    Say hello
+  </button>
+
+  <div class="submit-note" id="greetNote"></div>
+</div>
+
+</div>
+
+<footer>
+  Static website hosted on AWS EC2 with Nginx.
+</footer>
+
+</div>
+
+<script>
+
+function pad(n) {
+  return n.toString().padStart(2, '0');
+}
+
+/* Clock */
+
+function tick() {
+  const now = new Date();
+
+  document.getElementById('clock').textContent =
+    pad(now.getHours()) + ':' +
+    pad(now.getMinutes()) + ':' +
+    pad(now.getSeconds());
+
+  document.getElementById('dateLine').textContent =
+    now.toLocaleDateString(undefined, {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+}
+
+tick();
+setInterval(tick, 1000);
+
+
+/* Counter */
+
+let count = 0;
+
+const countVal = document.getElementById('countVal');
+
+document.getElementById('inc').addEventListener('click', function() {
+  count++;
+  countVal.textContent = count;
+});
+
+document.getElementById('dec').addEventListener('click', function() {
+  count--;
+  countVal.textContent = count;
+});
+
+
+/* Switch */
+
+const switchBtn = document.getElementById('switchBtn');
+const switchLabel = document.getElementById('switchLabel');
+
+switchBtn.addEventListener('click', function() {
+
+  const isOn = switchBtn.classList.toggle('on');
+
+  switchLabel.textContent = isOn ? 'on' : 'off';
+
+});
+
+
+/* Wave */
+
+const wavePath = document.getElementById('wavePath');
+
+let t = 0;
+
+function animateWave() {
+
+  t += 0.05;
+
+  const amp = 20;
+
+  const y1 = 40 + Math.sin(t) * amp;
+  const y2 = 40 + Math.sin(t + Math.PI) * amp;
+
+  wavePath.setAttribute(
+    'd',
+    `M0,40 Q75,${y1} 150,40 T300,40 Q225,${y2} 150,40`
+  );
+
+  requestAnimationFrame(animateWave);
+}
+
+if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+  requestAnimationFrame(animateWave);
+}
+
+
+/* Form */
+
+document.getElementById('greetBtn').addEventListener('click', function() {
+
+  const name = document.getElementById('nameInput').value.trim();
+  const mood = document.getElementById('moodInput').value;
+  const note = document.getElementById('greetNote');
+
+  if (name) {
+    note.textContent =
+      `Hello, ${name} — noted as ${mood} today.`;
+  } else {
+    note.textContent =
+      'Type a name above to get a proper greeting.';
+  }
+
+});
+
+</script>
+
+</body>
+</html>
